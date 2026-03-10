@@ -1,0 +1,6 @@
+# ========== 排除工作空间下 src 外的编译产物 ==========
+build/
+install/
+log/
+# software/
+yahboomcar_ws/
