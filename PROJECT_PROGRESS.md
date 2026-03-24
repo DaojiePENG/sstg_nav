@@ -1,7 +1,7 @@
 # SSTG-Nav 项目开发进度
 
 **项目日期**：2026-03-25  
-**项目状态**：阶段二（感知能力）已完成 → 准备阶段三（理解和规划）
+**项目状态**：阶段三（理解和规划）已完成 ✅ → 准备阶段四（执行和集成）
 
 ---
 
@@ -115,11 +115,36 @@
 - [x] 完整功能测试通过 (14/14 tests) ✓
 - [x] 编写完整文档（MODULE_GUIDE.md + NLP_QuickRef.md）✓
 
-#### 3.2 导航规划 [0%]
-- [ ] 创建 `sstg_navigation_planner` 包
-- [ ] 语义匹配算法
-- [ ] 候选点生成与排序
-- [ ] 导航计划生成
+#### 3.2 导航规划 [100%] ✅
+- [x] 创建 `sstg_navigation_planner` 包 (0.1.0) [2026-03-25]
+- [x] 实现语义匹配算法 (SemanticMatcher)
+  - 中英文别名支持（客厅/living_room）✓
+  - 意图到房间类型的映射 ✓
+  - 实体与语义标签的匹配 ✓
+  - 置信度评分 ✓
+- [x] 候选点生成与排序 (CandidateGenerator)
+  - 多维度评分 (语义50%、距离30%、可达性20%) ✓
+  - 指数衷衰距离分数 (exp(-distance/5.0)) ✓
+  - 候选点去重与排円 ✓
+- [x] 导航计划生成 (NavigationPlanner)
+  - Dijkstra 最短路径算法 (O(V²)) ✓
+  - 导航步骤生成 (navigate/rotate/observe) ✓
+  - 时间估计 (0.5m/s 移动+45deg/s 旋转) ✓
+- [x] ROS2 规划节点实现
+  - PlanNavigation 服务定义 ✓
+  - navigation_plans 话题发布 ✓
+  - 拓扑图集成 (QuerySemantic) ✓
+  - Mock 数据增强测试 ✓
+- [x] 编译构建成功 ✓ (1.49-1.56s)
+- [x] 功能测试通过 (4/4 tests) ✓
+- [x] 服务调用验证成功 ✓
+- [x] 代码量统计 (~1,160 行 Python)
+- [x] 文档完成 (MODULE_GUIDE + PLANNER_QuickRef, ~710行) ✓
+- [x] Bug 修复 [2026-03-25]
+  - 新增 PlanNavigation.srv 定义 (intent/entities/confidence/current_node) ✓
+  - 修复 QuerySemantic 字段访问 (query_type/query_value → query) ✓
+  - 修复 geometry_msgs.Pose 导入不存在错误 ✓
+  - 所有错误消除、服务正常运行 ✓
 
 ### ⏳ 阶段四：执行和集成（第7-8周）
 
@@ -156,13 +181,13 @@
 
 | 包名 | 状态 | 功能描述 |
 |------|------|--------|
-| sstg_msgs | ✅ 完成 | 消息与服务定义（7个消息+7个服务） |
+| sstg_msgs | ✅ 完成 | 消息与服务定义 (7个消息+8个服务) |
 | sstg_map_manager | ✅ 完成 | 拓扑图管理与可视化 |
 | sstg_perception | ✅ 完成 | 图像感知与VLM标注 |
-| sstg_nlp_interface | ✅ 完成 | 多模态自然语言理解 |
-| sstg_navigation_planner | ⏳ 待开发 | 导航规划 |
-| sstg_navigation_executor | ⏳ 待开发 | 导航执行 |
-| sstg_interaction_manager | ⏳ 待开发 | 交互管理 |
+| sstg_nlp_interface | ✅ 完成 | 多模态自然语言理解 (14/14测试) |
+| sstg_navigation_planner | ✅ 完成 | 导航规划 (0.1.0, 4/4测试) |
+| sstg_navigation_executor | ⏳ 待开发 | 导航执行 + Nav2 集成 |
+| sstg_interaction_manager | ⏳ 待开发 | 交互管理 + 业务流程 |
 
 ---
 

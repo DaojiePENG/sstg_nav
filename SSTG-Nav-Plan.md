@@ -385,16 +385,27 @@ uvicorn>=0.23   # WebUI服务
 - [x] 建立拓扑图的语义数据库
 - [x] Bug 修复（CaptureImage/AnnotateSemantic 服务）
 
-### 阶段三：理解和规划（第5-6周）✅ COMPLETED (3.1部分)
-- [x] 实现 `sstg_nlp_interface` 包 (100%)
+### 阶段三：理解和规划（第5-6周）✅ COMPLETED
+- [x] 实现 `sstg_nlp_interface` 包 (100%) [2026-03-23]
   - TextProcessor：文本处理和意图识别 ✓
   - MultimodalInputHandler：多模态输入处理 ✓
   - VLMClient：VLM 集成和文本/图片理解 ✓
   - QueryBuilder：语义查询构建 ✓
   - NLPNode：ROS2 节点实现 ✓
   - 完整文档和14个测试用例全部通过 ✓
-- [ ] 实现 `sstg_navigation_planner` 包 (0%)
-- [ ] 测试自然语言指令理解 (部分完成)
+  - 版本：0.1.0
+- [x] 实现 `sstg_navigation_planner` 包 (100%) [2026-03-25]
+  - SemanticMatcher：语义匹配 (中英别名支持) ✓
+  - CandidateGenerator：多维度评分 (50%语义+30%距离+20%可达性) ✓
+  - NavigationPlanner：Dijkstra 路径规划 (O(V²)) + 时间估计 ✓
+  - PlanningNode：ROS2 节点 + Mock 数据支持 ✓
+  - 代码量：~1,160 行 Python
+  - 文档：~710 行 (MODULE_GUIDE + PLANNER_QuickRef)
+  - 编译：成功 (1.49-1.56s) ✓
+  - 测试：4/4 通过 ✓
+  - Bug 修复：PlanNavigation.srv 新增 / QuerySemantic 字段修正 / geometry_msgs 导入修正 ✓
+  - 版本：0.1.0
+- [x] 测试自然语言指令理解和规划 (完成)
 
 ### 阶段四：执行和集成（第7-8周）⏳ PENDING
 - [ ] 实现 `sstg_navigation_executor` 包
