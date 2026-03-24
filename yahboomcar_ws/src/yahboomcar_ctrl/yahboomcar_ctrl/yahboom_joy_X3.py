@@ -38,9 +38,12 @@ class JoyTeleop(Node):
 		self.sub_Joy = self.create_subscription(Joy,'joy', self.buttonCallback,10)
 		
 		#declare parameter and get the value
-		self.declare_parameter('xspeed_limit',1.0)
-		self.declare_parameter('yspeed_limit',1.0)
-		self.declare_parameter('angular_speed_limit',5.0)
+		# self.declare_parameter('xspeed_limit',1.0)
+		# self.declare_parameter('yspeed_limit',1.0)
+		# self.declare_parameter('angular_speed_limit',5.0)
+		self.declare_parameter('xspeed_limit',0.3)
+		self.declare_parameter('yspeed_limit',0.3)
+		self.declare_parameter('angular_speed_limit',1.0)
 		self.xspeed_limit = self.get_parameter('xspeed_limit').get_parameter_value().double_value
 		self.yspeed_limit = self.get_parameter('yspeed_limit').get_parameter_value().double_value
 		self.angular_speed_limit = self.get_parameter('angular_speed_limit').get_parameter_value().double_value
@@ -48,7 +51,7 @@ class JoyTeleop(Node):
 		
 	def buttonCallback(self,joy_data):
 		if not isinstance(joy_data, Joy): return
-		if self.user_name == "jetson": self.user_jetson(joy_data)
+		if self.user_name == "daojie": self.user_jetson(joy_data)
 		else: self.user_pc(joy_data)
 		
 	def user_jetson(self, joy_data):
