@@ -1,0 +1,553 @@
+# 空间语义拓扑图导航系统 (SSTG-Nav) 项目规划
+
+**项目名称**：Spatial Semantic Topological Graph Navigation System  
+**时间**：2026年3月  
+**目标平台**：亚博X3 + 大唐NUC锐龙5 6600H + Ubuntu 22.04 + ROS2 Humble  
+**开发语言**：Python
+
+---
+
+## 一、系统总体架构
+
+### 1.1 系统流程图
+
+```
+用户指令 (自然语言)
+    ↓
+[NLP/多模态理解模块] 
+    ↓
+查询拓扑图语义数据库
+    ↓
+[规划模块] 生成导航候选点列表
+    ↓
+选择第一个候选点
+    ↓
+[导航执行模块] 调用Nav2
+    ↓
+到达目标点 → [图像采集+语义标注]
+    ↓
+检查是否有目标物品
+    ↓
+是 → 返回结果，任务完成
+否 → 询问用户 → 继续/结束
+```
+
+### 1.2 系统主要功能模块
+
+| 模块名称 | 功能描述 | 输入/输出 | 依赖 |
+|---------|--------|--------|------|
+| **sstg_map_manager** | 拓扑图构建、存储、查询 | Pose + Semantics | 无 |
+| **sstg_perception** | 图像采集、处理、VLM推理 | RGB-D 图像 → 语义标注 | VLM API |
+| **sstg_nlp_interface** | 自然语言理解、意图识别 | 自然语言 → 语义查询 | VLM API |
+| **sstg_navigation_planner** | 拓扑导航规划、候选点生成 | 目标语义 + 拓扑图 → 路径 | sstg_map_manager |
+| **sstg_navigation_executor** | 单点导航执行、反馈处理 | 目标位置 → 导航状态 | Nav2 |
+| **sstg_interaction_manager** | 用户交互、任务管理、流程控制 | 用户输入 → 系统指令 | 所有模块 |
+
+---
+
+## 二、ROS2包设计详细说明
+
+### 2.1 **sstg_map_manager** - 拓扑图管理包
+
+**功能**：
+- 拓扑节点的创建、删除、修改
+- 节点的位置姿态存储（x, y, theta）
+- 节点的全景图存储路径
+- 节点的语义信息存储和检索（物品列表、环境类型等）
+- 拓扑图的可视化（基于WebUI）
+- 数据持久化（JSON或SQLite）
+
+**实现说明**：
+- 拓扑结构管理采用NetworkX库实现，支持灵活的图结构操作与分析。
+- 拓扑图可视化与交互采用WebUI界面，便于用户直观操作和查看。
+
+**主要组件**：
+- `TopologicalNode` - 拓扑节点数据类
+- `SemanticInfo` - 语义信息数据类
+- `TopologicalMap` - 拓扑图管理器
+- ROS2 Node: `map_manager_node`
+
+**ROS2接口**：
+- Service: `create_node` (geometry_msgs::PoseStamped) → (bool)
+- Service: `query_semantic` (string) → (vector<int> node_ids, vector<SemanticData>)
+- Service: `update_semantic` (int node_id, SemanticData) → (bool)
+- Service: `get_node_pose` (int node_id) → (geometry_msgs::PoseStamped)
+- Service: `save_map` () → (bool)
+- Service: `load_map` (string filename) → (bool)
+- Publisher: `topological_graph_markers` (visualization_msgs::MarkerArray)
+
+**存储格式**：
+```json
+{
+  "nodes": [
+    {
+      "id": 0,
+      "pose": {"x": 0.0, "y": 0.0, "theta": 0.0},
+      "panorama_paths": {
+        "0°": "path/to/image_0.png",
+        "90°": "path/to/image_90.png",
+        "180°": "path/to/image_180.png",
+        "270°": "path/to/image_270.png"
+      },
+      "semantic_info": {
+        "room_type": "living_room",
+        "objects": [
+          {"name": "sofa", "position": "front", "panorama_angle": "0°"},
+          {"name": "table", "position": "left", "panorama_angle": "270°"}
+        ]
+      }
+    }
+  ]
+}
+```
+
+---
+
+### 2.2 **sstg_perception** - 感知和语义标注包
+
+**功能**：
+- 订阅RGB-D相机话题
+- 按90度间隔采集四张全景图
+- 调用VLM API进行语义识别
+- 解析VLM输出，提取物品信息和环境类型
+- 提供图像检查功能（可视化标注结果）
+
+**主要组件**：
+- `CameraSubscriber` - 相机话题订阅器
+- `PanoramaCapture` - 全景图采集管理器
+- `VLMClient` - 阿里云百炼API客户端 (qwen-vl-plus)
+- `SemanticExtractor` - 语义信息解析器
+- ROS2 Node: `perception_node`
+
+**ROS2接口**：
+- Subscription: `/camera/rgb/image_raw` (sensor_msgs::Image)
+- Subscription: `/camera/depth/image_raw` (sensor_msgs::Image)
+- Service: `capture_panorama` (int node_id) → (vector<string> image_paths)
+- Service: `annotate_semantic` (string image_path) → (SemanticData)
+- Service: `batch_annotate` (vector<string> image_paths) → (vector<SemanticData>)
+- Publisher: `semantic_annotations` (sstg_msgs::SemanticAnnotation)
+
+**VLM Prompt设计**：
+```
+请分析这张房间图像，并以JSON格式返回以下信息：
+{
+  "room_type": "环境类型（如：客厅、卧室、卫生间等）",
+  "confidence": 0.95,
+  "objects": [
+    {
+      "name": "物品名称",
+      "position": "图像位置（上/下/左/右/中心）",
+      "quantity": 1,
+      "confidence": 0.95
+    }
+  ],
+  "description": "房间的简要描述"
+}
+```
+
+---
+
+### 2.3 **sstg_nlp_interface** - 自然语言理解包
+
+**功能**：
+- 接收用户的多模态输入（纯文字、纯音频、图片及其混合）
+- 调用大模型（qwen-omni-flash）理解意图
+- 转换为系统可执行的语义查询
+- 处理多轮对话和歧义消除
+
+**多模态支持**：
+- 纯文字输入：直接文本指令处理
+- 纯音频输入：语音识别转换为文字后处理
+- 图片输入：图像理解提取关键语义信息
+- 混合输入：支持文字+图片、音频+图片等组合，综合分析
+
+**主要组件**：
+- `NLPClient` - 多模态大模型客户端
+- `InputProcessor` - 多模态输入处理器（音频/图片/文本）
+- `IntentParser` - 意图解析器
+- `SemanticQueryBuilder` - 语义查询构建器
+- ROS2 Node: `nlp_interface_node`
+
+**ROS2接口**：
+- Service: `understand_command` (string text) → (Command)
+- Service: `understand_command_audio` (bytes audio_data) → (Command)
+- Service: `understand_command_multimodal` (bytes content, string content_type) → (Command)
+- Service: `clarify_intent` (string text, vector<string> context) → (Command)
+- Publisher: `parsed_commands` (sstg_msgs::Command)
+
+**Command消息格式**：
+```
+struct Command {
+  string intent                    # "find", "navigate", "check"
+  string target_object             # "sofa"
+  string target_room               # "living_room"
+  vector<string> constraints       # 约束条件
+  float confidence                 # 理解置信度
+  vector<string> clarifications    # 需要澄清的问题
+}
+```
+
+---
+
+### 2.4 **sstg_navigation_planner** - 导航规划包
+
+**功能**：
+- 根据语义查询在拓扑图中检索匹配的节点
+- 生成导航候选点列表（按相关性排序）
+- 支持多目标场景（如"客厅的沙发上的花瓶"）
+- 生成导航计划
+
+**主要组件**：
+- `SemanticMatcher` - 语义匹配器
+- `PlanGenerator` - 导航计划生成器
+- `CandidateSelector` - 候选点选择器
+- ROS2 Node: `planner_node`
+
+**ROS2接口**：
+- Service: `plan_navigation` (sstg_msgs::Command) → (sstg_msgs::NavigationPlan)
+- Service: `get_candidates` (sstg_msgs::Command) → (vector<int> node_ids)
+- Publisher: `navigation_plans` (sstg_msgs::NavigationPlan)
+
+**NavigationPlan消息格式**：
+```
+struct NavigationPlan {
+  vector<int> candidate_node_ids      # 候选节点ID列表
+  vector<geometry_msgs::Pose> poses   # 对应的位置
+  vector<float> relevance_scores      # 相关性评分
+  string reasoning                    # 规划推理过程
+  int recommended_index               # 推荐的第一个目标索引
+}
+```
+
+---
+
+### 2.5 **sstg_navigation_executor** - 导航执行包
+
+**功能**：
+- 调用Navigation2发送导航目标
+- 监控导航状态和进度
+- 处理导航失败和异常
+- 提供导航反馈和日志
+
+**主要组件**：
+- `Nav2Client` - Nav2客户端封装
+- `NavigationMonitor` - 导航状态监控器
+- `FeedbackHandler` - 反馈处理器
+- ROS2 Node: `executor_node`
+
+**ROS2接口**：
+- Action: `navigate_to_pose` (geometry_msgs/PoseStamped) 
+- Service: `execute_navigation` (int node_id) → (bool success)
+- Subscription: `/amcl_pose` (geometry_msgs::PoseWithCovarianceStamped)
+- Publisher: `navigation_feedback` (sstg_msgs::NavigationFeedback)
+
+**NavigationFeedback消息格式**：
+```
+struct NavigationFeedback {
+  int node_id
+  string status                # "starting", "in_progress", "reached", "failed"
+  float progress               # 0.0 ~ 1.0
+  geometry_msgs::Pose current_pose
+  string error_message
+  float distance_to_target
+}
+```
+
+---
+
+### 2.6 **sstg_interaction_manager** - 交互管理包
+
+**功能**：
+- 主流程控制和任务状态管理
+- 用户交互界面（可选：Web UI或命令行）
+- 对话管理和历史记录
+- 异常处理和恢复
+
+**主要组件**：
+- `InteractionManager` - 主交互管理器
+- `DialogueManager` - 对话管理器
+- `StateManager` - 状态管理器
+- ROS2 Node: `interaction_manager_node`
+
+**ROS2接口**：
+- Service: `start_task` (string user_command) → (TaskID)
+- Service: `respond_to_query` (TaskID, string response) → (NextAction)
+- Publisher: `task_status` (sstg_msgs::TaskStatus)
+- Subscription: 订阅所有模块的结果并协调
+
+**TaskStatus消息格式**：
+```
+struct TaskStatus {
+  string task_id
+  string state                 # "idle", "understanding", "planning", "navigating", "checking", "querying_user", "completed", "failed"
+  string current_message       # 显示给用户的消息
+  string user_query_needed     # 如果需要用户回应则非空
+  float progress               # 0.0 ~ 1.0
+  string history              # 任务历史记录
+}
+```
+
+---
+
+### 2.7 **sstg_camera_capture** - 图像采集包（可选）
+
+**功能**：
+- 直接控制/监控图像采集
+- 机器人旋转控制（如果自动旋转）
+- 图像预处理和质量检查
+
+**主要组件**：
+- `CameraController` - 摄像头控制
+- `RobotRotationController` - 机器人旋转控制
+
+---
+
+### 2.8 **sstg_msgs** - 自定义消息包
+
+**包含的消息和服务定义**：
+- `SemanticData.msg` - 语义数据
+- `Command.msg` - 命令
+- `NavigationPlan.msg` - 导航计划
+- `NavigationFeedback.msg` - 导航反馈
+- `TaskStatus.msg` - 任务状态
+- 所有Service定义
+
+---
+
+## 三、外部依赖和配置
+
+### 3.1 API 配置
+
+**阿里云百炼API配置**：
+```yaml
+API_KEY: sk-942e8661f10f492280744a26fe7b953b
+BASE_URL: https://dashscope.aliyuncs.com/compatible-mode/v1
+VLM_MODEL: qwen-vl-plus
+MULTIMODAL_MODEL: qwen-omni-flash
+```
+
+**配置文件位置**：`~/.config/sstg_nav/api_config.yaml` 或环境变量
+
+### 3.2 ROS2 依赖
+
+- `geometry_msgs`
+- `sensor_msgs`
+- `nav2_msgs`
+- `visualization_msgs`
+- `tf2`
+- `rclpy` - Python客户端库
+- `Navigation2` 框架
+
+### 3.3 Python 依赖
+
+```
+requests>=2.28.0
+opencv-python>=4.5.0
+pillow>=8.0.0
+numpy>=1.20.0
+pydantic>=1.8.0
+pyyaml>=5.4.0
+openai>=1.0.0  # 用于兼容模式API调用
+networkx>=3.0   # 拓扑图管理
+fastapi>=0.100  # WebUI后端
+uvicorn>=0.23   # WebUI服务
+```
+
+---
+
+## 四、开发顺序和里程碑
+
+### 阶段一：基础设施（第1-2周）
+- [ ] 建立 `sstg_msgs` 包
+- [ ] 建立 `sstg_map_manager` 包，完成数据结构和本地存储
+- [ ] 完成相机话题订阅和基础图像采集
+
+### 阶段二：感知能力（第3-4周）
+- [ ] 实现 `sstg_perception` 包，集成VLM API
+- [ ] 测试语义标注准确性
+- [ ] 建立拓扑图的语义数据库
+
+### 阶段三：理解和规划（第5-6周）
+- [ ] 实现 `sstg_nlp_interface` 包
+- [ ] 实现 `sstg_navigation_planner` 包
+- [ ] 测试自然语言指令理解
+
+### 阶段四：执行和集成（第7-8周）
+- [ ] 实现 `sstg_navigation_executor` 包
+- [ ] 实现 `sstg_interaction_manager` 包
+- [ ] 系统集成测试
+
+### 阶段五：优化和部署（第9-10周）
+- [ ] 性能优化
+- [ ] 错误处理和恢复机制
+- [ ] 用户界面完善
+- [ ] 场景测试和调试
+
+---
+
+## 五、数据流示意图
+
+```
+┌─────────────────┐
+│  用户自然语言   │
+└────────┬────────┘
+         │
+         ▼
+┌──────────────────────┐
+│ sstg_nlp_interface   │ ◄─ qwen-omni-flash
+│ (意图理解)           │
+└────────┬─────────────┘
+         │
+         ▼
+    ┌─────────┐
+    │ Command │
+    └────┬────┘
+         │
+         ▼
+┌──────────────────────┐
+│ sstg_navigation_     │
+│ planner              │ ◄─ sstg_map_manager (查询)
+│ (规划候选点)         │
+└────────┬─────────────┘
+         │
+         ▼
+  ┌────────────────┐
+  │NavigationPlan  │
+  │(候选点列表)    │
+  └────┬───────────┘
+       │
+       ▼
+┌──────────────────────┐
+│ sstg_navigation_     │
+│ executor             │ ◄─ Nav2
+│ (执行单点导航)       │
+└────────┬─────────────┘
+         │
+    [到达目标点]
+         │
+         ▼
+┌──────────────────────┐
+│ sstg_perception      │ ◄─ Gemini 336L (RGB-D)
+│ (采集&语义标注)      │ ◄─ qwen-vl-plus
+└────────┬─────────────┘
+         │
+         ▼
+    [检查物品]
+         │
+    ┌────┴────┐
+    │          │
+   是          否
+    │          │
+    ▼          ▼
+[返回结果]  [询问继续]
+           │
+        ┌──┴──┐
+        │     │
+       是     否
+        │     │
+        └──┬──┘
+           │
+        [重复或结束]
+```
+
+---
+
+## 六、需要补充/完善的事项
+
+### 当前需求细节与约束（2026-03-24补充）
+
+1. **相机旋转机制**：
+  - 机器人到达节点后，调用Nav2导航模块原地旋转，依次采集四个方向（0°/90°/180°/270°）的图像。
+
+2. **遥控建图与语义标注触发**：
+  - 遥控建图时，用户可通过唤醒机器人并下达标注指令，或通过ros2命令行发布标注指令来触发语义标注。
+  - 暂不考虑自主探索策略，后续再开发。
+
+3. **语义标注与位姿保存**：
+  - 语义标注时需同步保存标注画面与对应的机器人位姿。
+
+4. **物品空间关系处理**：
+  - 只需导航到最符合用户描述的位置和姿态，无需处理“沙发上的花瓶”这类相对位置关系。
+  - 图像中的物品位置只需文字描述（如“左侧”、“右侧”等），无需像素级坐标。
+
+5. **导航失败处理**：
+  - 若无法到达某个节点，直接询问用户是否充实拓扑或下达其它指令，不自动尝试下一个候选点。
+
+6. **网络与API调用**：
+  - 当前阶段直接使用API，不考虑网络延时和离线降级。
+
+7. **VLM响应时延**：
+  - 可接受较长响应时间，建议异步处理以提升用户体验。
+
+> 以上细节已纳入各相关模块设计与实现约束。
+
+## 七、文件树结构规划
+
+```
+yahboomcar_ros2_ws/
+├── src/
+│   ├── sstg_msgs/                    # 消息定义包
+│   │   ├── CMakeLists.txt
+│   │   ├── package.xml
+│   │   ├── msg/
+│   │   │   ├── SemanticData.msg
+│   │   │   ├── Command.msg
+│   │   │   ├── NavigationPlan.msg
+│   │   │   ├── NavigationFeedback.msg
+│   │   │   └── TaskStatus.msg
+│   │   └── srv/
+│   │       └── (Service定义)
+│   │
+│   ├── sstg_map_manager/             # 拓扑图管理
+│   │   ├── CMakeLists.txt
+│   │   ├── package.xml
+│   │   ├── src/
+│   │   ├── include/
+│   │   └── launch/
+│   │
+│   ├── sstg_perception/              # 感知和语义标注
+│   │   ├── CMakeLists.txt
+│   │   ├── package.xml
+│   │   ├── src/
+│   │   ├── include/
+│   │   └── launch/
+│   │
+│   ├── sstg_nlp_interface/           # 自然语言理解
+│   │   ├── CMakeLists.txt
+│   │   ├── package.xml
+│   │   ├── src/
+│   │   └── launch/
+│   │
+│   ├── sstg_navigation_planner/      # 导航规划
+│   │   ├── CMakeLists.txt
+│   │   ├── package.xml
+│   │   ├── src/
+│   │   └── launch/
+│   │
+│   ├── sstg_navigation_executor/     # 导航执行
+│   │   ├── CMakeLists.txt
+│   │   ├── package.xml
+│   │   ├── src/
+│   │   └── launch/
+│   │
+│   └── sstg_interaction_manager/     # 交互管理
+│       ├── CMakeLists.txt
+│       ├── package.xml
+│       ├── src/
+│       └── launch/
+│
+├── SSTG-Nav-Plan.md                  # 本文档
+└── SSTG-Nav-Config.yaml              # 系统配置文件
+```
+
+---
+
+## 八、下一步行动
+
+1. **确认/补充需求**：请回答上述"开放问题"中的各项
+2. **API配置**：确认API Key和基础URL是否有效
+3. **开始开发**：从 `sstg_msgs` 包开始，逐步推进
+
+**建议首个开发任务**：创建 `sstg_msgs` 包并定义所有消息结构
+
+注意： 每个模块相关的使用测试说明文档都放在该模块文件夹下的doc文件夹下，测试脚本都放在该模块文件夹下的test文件。

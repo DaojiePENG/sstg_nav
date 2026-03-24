@@ -1,0 +1,6 @@
+int32 node_id
+string panorama_angle
+string image_path
+geometry_msgs/Pose pose
+sstg_msgs/SemanticData semantic_data
+builtin_interfaces/Time timestamp
