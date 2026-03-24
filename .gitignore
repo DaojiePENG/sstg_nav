@@ -4,3 +4,6 @@ install/
 log/
 .claude/
 __pycache__/
+*.log
+*.pyc
+*.pyo

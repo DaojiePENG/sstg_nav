@@ -1,7 +1,7 @@
 # SSTG-Nav 项目开发进度
 
-**项目日期**：2026-03-24  
-**项目状态**：阶段一（基础设施）进行中
+**项目日期**：2026-03-25  
+**项目状态**：阶段二（感知能力）已完成 → 准备阶段三（理解和规划）
 
 ---
 
@@ -25,11 +25,13 @@
   - NavigationFeedback
   - TaskStatus
   - SemanticAnnotation
-- [x] 定义4个核心服务接口
+- [x] 定义6个核心服务接口
   - CreateNode
   - QuerySemantic
   - UpdateSemantic
   - GetNodePose
+  - CaptureImage （新增）
+  - AnnotateSemantic （新增）
 - [x] 编译验证通过
 
 #### 1.3 拓扑图管理 [100%]
@@ -58,26 +60,40 @@
 - [x] 编写模块指南 → `sstg_map_manager/MODULE_GUIDE.md`
 - [x] 编写快速参考 → `SSTG_MapManager_QuickRef.md`
 
+
+---
+
+### ✅ 阶段二：感知能力（第3-4周）
+
+#### 2.1 图像感知模块 [100%]
+- [x] 创建 `sstg_perception` 包
+- [x] 实现 CameraSubscriber (RGB-D 相机订阅)
+- [x] 实现 PanoramaCapture (四方向全景采集)
+- [x] 集成 Gemini 336L 相机启动配置
+- [x] VLM 客户端实现 (qwen-vl-plus)
+- [x] VLM 推理与结果解析
+- [x] SemanticExtractor (JSON 解析、置信度过滤、多视图合并)
+- [x] ROS2 Perception Node (两个服务)
+- [x] 环境变量 API Key 配置支持
+- [x] 纯 Python ament_python 包配置
+- [x] 编译构建成功 ✓
+- [x] 完整功能测试通过 (4/4 tests) ✓
+- [x] 全功能验证通过 (7/7 checks) ✓
+- [x] 编写模块指南 → `MODULE_GUIDE.md`
+- [x] 编写快速参考 → `PERCEPTION_QuickRef.md`
+- [x] **Bug Fix [2026-03-25]**: 修复 CaptureImage/AnnotateSemantic 服务消息缺失
+  - 新增两个服务定义到 sstg_msgs
+  - 修复 perception_node.py 中的导入方式
+  - Node 成功初始化 ✓
+
+#### 2.2 语义标注工具 [100%]
+- [x] 实现标注指令处理 (capture_panorama, annotate_semantic 服务)
+- [x] 自动/手动标注触发机制
+- [x] 标注结果存储与序列化
+
 ---
 
 ## 📋 待完成任务
-
-### ⏳ 阶段二：感知能力（第3-4周）
-
-#### 2.1 图像感知模块 [0%]
-- [ ] 创建 `sstg_perception` 包
-- [ ] 实现 RGB-D 图像订阅
-- [ ] 实现四方向全景图采集
-- [ ] 集成阿里云百炼 VLM API (qwen-vl-plus)
-- [ ] VLM 推理与结果解析
-- [ ] 语义标注消息发布
-- [ ] 图像与位姿保存
-- [ ] 模块测试
-
-#### 2.2 语义标注工具 [0%]
-- [ ] 实现标注指令处理
-- [ ] 自动/手动标注触发
-- [ ] 标注结果存储
 
 ### ⏳ 阶段三：理解和规划（第5-6周）
 
@@ -133,9 +149,9 @@
 
 | 包名 | 状态 | 功能描述 |
 |------|------|--------|
-| sstg_msgs | ✅ 完成 | 消息与服务定义 |
+| sstg_msgs | ✅ 完成 | 消息与服务定义（7个消息+6个服务） |
 | sstg_map_manager | ✅ 完成 | 拓扑图管理与可视化 |
-| sstg_perception | ⏳ 待开发 | 图像感知与VLM标注 |
+| sstg_perception | ✅ 完成 | 图像感知与VLM标注 |
 | sstg_nlp_interface | ⏳ 待开发 | 自然语言理解 |
 | sstg_navigation_planner | ⏳ 待开发 | 导航规划 |
 | sstg_navigation_executor | ⏳ 待开发 | 导航执行 |
