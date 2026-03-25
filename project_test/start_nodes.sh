@@ -14,8 +14,8 @@ NC='\033[0m' # No Color
 # Configuration
 WORKSPACE_DIR="/home/daojie/yahboomcar_ros2_ws"
 SOURCE_CMD="source ${WORKSPACE_DIR}/yahboomcar_ws/install/setup.bash"
-LOG_DIR="${WORKSPACE_DIR}/test/logs"
-PID_FILE="${WORKSPACE_DIR}/test/processes.pid"
+LOG_DIR="${WORKSPACE_DIR}/project_test/logs"
+PID_FILE="${WORKSPACE_DIR}/project_test/processes.pid"
 
 # Create log directory
 mkdir -p "$LOG_DIR"
@@ -140,7 +140,7 @@ if [ "$services_ok" = true ]; then
     echo ""
     echo -e "${YELLOW}Commands:${NC}"
     echo -e "  # Run integration tests"
-    echo -e "  python test/test_system_integration.py"
+    echo -e "  python project_test/test_system_integration.py"
     echo ""
     echo -e "  # Manual testing"
     echo -e "  ros2 service call /start_task sstg_msgs/srv/ProcessNLPQuery \"{text_input: 'Go to the living room', context: 'home'}\""

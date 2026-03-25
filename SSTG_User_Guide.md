@@ -54,11 +54,11 @@ ros2 run sstg_interaction_manager interaction_manager_node --help
 
 ### 启动完整系统
 
-使用提供的启动脚本：
+使用提供的启动脚本（推荐）：
 
 ```bash
 cd ~/yahboomcar_ros2_ws
-./test/start_integration_test.sh
+./project_test/start_nodes.sh
 ```
 
 或者手动启动各组件：
@@ -279,10 +279,10 @@ ros2 service call /start_task sstg_msgs/srv/ProcessNLPQuery "{
 ps aux | grep ros2
 
 # 重启服务
-./test/start_integration_test.sh
+./project_test/start_nodes.sh
 
 # 检查日志
-tail -f ~/yahboomcar_ros2_ws/test/logs/*.log
+tail -f ~/yahboomcar_ros2_ws/project_test/logs/*.log
 ```
 
 #### 2. NLP处理失败
@@ -320,10 +320,10 @@ ros2 service list | grep nav2
 
 ```bash
 # 查看所有服务日志
-tail -f ~/yahboomcar_ros2_ws/test/logs/*.log
+tail -f ~/yahboomcar_ros2_ws/project_test/logs/*.log
 
 # 过滤错误信息
-grep -r "ERROR\|WARN" ~/yahboomcar_ros2_ws/test/logs/
+grep -r "ERROR\|WARN" ~/yahboomcar_ros2_ws/project_test/logs/
 ```
 
 ### 调试模式

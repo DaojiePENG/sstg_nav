@@ -74,8 +74,8 @@ SSTG导航系统是一个基于ROS2的智能机器人导航框架，集成了自
 
 2. **启动系统**
    ```bash
-   # 使用启动脚本
-   ./test/start_integration_test.sh
+   # 使用启动脚本（推荐）
+   ./project_test/start_nodes.sh
 
    # 或手动启动各组件
    ros2 run sstg_map_manager map_manager_node &
@@ -112,15 +112,21 @@ ros2 service call /cancel_task std_srvs/srv/Trigger
 ### 运行集成测试
 
 ```bash
-# 完整系统测试
-./test/complete_test.sh
+# 一键集成测试（推荐）
+./project_test/run_test.sh
 
-# 快速功能验证
-./test/quick_test.sh
+# 或分步测试
+# 1. 初始化测试地图
+python3 project_test/init_test_map.py
 
-# 详细集成测试
-python test/test_system_integration.py
+# 2. 启动所有节点
+./project_test/start_nodes.sh
+
+# 3. 在另一终端运行测试
+python3 project_test/test_system_integration.py
 ```
+
+详细说明请查看 [测试文档](project_test/README.md)
 
 ### 测试结果
 
@@ -141,7 +147,7 @@ python test/test_system_integration.py
 
 - `sstg_*/README.md` - 模块使用说明
 - `sstg_*/doc/` - 详细技术文档
-- `test/` - 测试脚本和结果
+- `project_test/` - 测试脚本和结果
 
 ## 🎯 示例应用
 

@@ -11,10 +11,12 @@ def create_test_map():
     """Create a test topological map with semantic information"""
 
     # Test map data with semantic information
+    # 重要：包含中文别名以支持中文查询匹配
     test_map = {
         "nodes": [
             {
                 "id": 0,
+                "name": "客厅",
                 "pose": {
                     "x": 0.0,
                     "y": 0.0,
@@ -23,19 +25,23 @@ def create_test_map():
                 "panorama_paths": {},
                 "semantic_info": {
                     "room_type": "living_room",
-                    "confidence": 0.9,
+                    "room_type_cn": "客厅",
+                    "aliases": ["客厅", "沙发", "电视", "休息区", "大厅"],
+                    "confidence": 0.95,
                     "objects": [
-                        {"name": "sofa", "position": "center", "quantity": 1, "confidence": 0.8},
-                        {"name": "tv", "position": "north_wall", "quantity": 1, "confidence": 0.9},
-                        {"name": "table", "position": "center", "quantity": 1, "confidence": 0.7}
+                        {"name": "sofa", "name_cn": "沙发", "position": "center", "quantity": 1, "confidence": 0.95},
+                        {"name": "tv", "name_cn": "电视", "position": "north_wall", "quantity": 1, "confidence": 0.95},
+                        {"name": "table", "name_cn": "茶几", "position": "center", "quantity": 1, "confidence": 0.9}
                     ],
-                    "description": "主客厅区域，包含沙发、电视和桌子"
+                    "semantic_tags": ["rest", "comfortable", "entertainment", "main_space"],
+                    "description": "主客厅区域，包含沙发、电视和茶几"
                 },
                 "created_time": time.time(),
                 "last_updated": time.time()
             },
             {
                 "id": 1,
+                "name": "厨房",
                 "pose": {
                     "x": 3.0,
                     "y": 0.0,
@@ -44,12 +50,15 @@ def create_test_map():
                 "panorama_paths": {},
                 "semantic_info": {
                     "room_type": "kitchen",
+                    "room_type_cn": "厨房",
+                    "aliases": ["厨房", "烹饪区", "餐厅", "用餐区"],
                     "confidence": 0.95,
                     "objects": [
-                        {"name": "stove", "position": "east_wall", "quantity": 1, "confidence": 0.9},
-                        {"name": "fridge", "position": "north_wall", "quantity": 1, "confidence": 0.95},
-                        {"name": "table", "position": "center", "quantity": 1, "confidence": 0.8}
+                        {"name": "stove", "name_cn": "炉灶", "position": "east_wall", "quantity": 1, "confidence": 0.95},
+                        {"name": "fridge", "name_cn": "冰箱", "position": "north_wall", "quantity": 1, "confidence": 0.95},
+                        {"name": "table", "name_cn": "餐桌", "position": "center", "quantity": 1, "confidence": 0.9}
                     ],
+                    "semantic_tags": ["cooking", "food", "dining", "utility"],
                     "description": "厨房区域，包含炉灶、冰箱和餐桌"
                 },
                 "created_time": time.time(),
@@ -57,6 +66,7 @@ def create_test_map():
             },
             {
                 "id": 2,
+                "name": "卧室",
                 "pose": {
                     "x": 0.0,
                     "y": 3.0,
@@ -65,12 +75,15 @@ def create_test_map():
                 "panorama_paths": {},
                 "semantic_info": {
                     "room_type": "bedroom",
-                    "confidence": 0.9,
+                    "room_type_cn": "卧室",
+                    "aliases": ["卧室", "睡眠区", "休息室", "床房"],
+                    "confidence": 0.95,
                     "objects": [
-                        {"name": "bed", "position": "center", "quantity": 1, "confidence": 0.95},
-                        {"name": "wardrobe", "position": "west_wall", "quantity": 1, "confidence": 0.8},
-                        {"name": "desk", "position": "south_wall", "quantity": 1, "confidence": 0.7}
+                        {"name": "bed", "name_cn": "床", "position": "center", "quantity": 1, "confidence": 0.95},
+                        {"name": "wardrobe", "name_cn": "衣柜", "position": "west_wall", "quantity": 1, "confidence": 0.9},
+                        {"name": "desk", "name_cn": "书桌", "position": "south_wall", "quantity": 1, "confidence": 0.85}
                     ],
+                    "semantic_tags": ["sleep", "rest", "quiet", "private"],
                     "description": "卧室区域，包含床、衣柜和书桌"
                 },
                 "created_time": time.time(),
@@ -78,6 +91,7 @@ def create_test_map():
             },
             {
                 "id": 3,
+                "name": "卫生间",
                 "pose": {
                     "x": -2.0,
                     "y": 1.0,
@@ -86,12 +100,15 @@ def create_test_map():
                 "panorama_paths": {},
                 "semantic_info": {
                     "room_type": "bathroom",
-                    "confidence": 0.85,
+                    "room_type_cn": "卫生间",
+                    "aliases": ["卫生间", "浴室", "洗手间", "厕所"],
+                    "confidence": 0.9,
                     "objects": [
-                        {"name": "toilet", "position": "north_wall", "quantity": 1, "confidence": 0.9},
-                        {"name": "sink", "position": "east_wall", "quantity": 1, "confidence": 0.8},
-                        {"name": "shower", "position": "west_wall", "quantity": 1, "confidence": 0.7}
+                        {"name": "toilet", "name_cn": "马桶", "position": "north_wall", "quantity": 1, "confidence": 0.95},
+                        {"name": "sink", "name_cn": "水槽", "position": "east_wall", "quantity": 1, "confidence": 0.9},
+                        {"name": "shower", "name_cn": "淋浴", "position": "west_wall", "quantity": 1, "confidence": 0.9}
                     ],
+                    "semantic_tags": ["hygiene", "washing", "utility", "private"],
                     "description": "卫生间区域，包含马桶、水槽和淋浴"
                 },
                 "created_time": time.time(),
@@ -123,10 +140,17 @@ def main():
     print(f"✅ Test topological map created: {map_file}")
     print(f"   - {len(test_map['nodes'])} nodes with semantic information")
     print(f"   - {len(test_map['edges'])} edges connecting nodes")
-    print("\nNodes:")
+    print("\n📍 Nodes with semantic information:")
     for node in test_map['nodes']:
         semantic = node['semantic_info']
-        print(f"  - Node {node['id']}: {semantic['room_type']} - {semantic['description']}")
+        aliases = semantic.get('aliases', [])
+        print(f"  • Node {node['id']}: {semantic['room_type_cn']} ({semantic['room_type']})")
+        print(f"    - 别名: {', '.join(aliases)}")
+        print(f"    - 对象: {', '.join([obj['name_cn'] for obj in semantic['objects']])}")
+        print(f"    - 描述: {semantic['description']}")
+    
+    print("\n✅ Map file ready for ROS2 nodes")
+    print(f"   Start nodes with: ./run_integration_test.sh")
 
 if __name__ == "__main__":
     main()
