@@ -24,6 +24,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/AnnotateSemantic.srv"
   "srv/ProcessNLPQuery.srv"
   "srv/PlanNavigation.srv"
+  "srv/ExecuteNavigation.srv"
   DEPENDENCIES
     builtin_interfaces
     geometry_msgs
