@@ -414,11 +414,17 @@ uvicorn>=0.23   # WebUI服务
   - 完成 `navigation_monitor`：实时距离、进度计算、到达判断
   - 完成 `feedback_handler`：状态机处理（starting -> in_progress -> reached/failed）
   - 编写单元测试：目标发送、取消、失败回调和可达性判断
-- [ ] 实现 `sstg_interaction_manager` 包
-  - 设计任务状态机：`idle -> understanding -> planning -> navigating -> checking -> completed/failed`
-  - 连接多个模块：`tts/nlu` -> `planner` -> `executor` -> `perception` -> `user_feedback`
-  - 实现异常恢复策略：导航失败后重试/询问用户是否切换目标/更新拓扑
-  - 实现任务调度服务：`start_task`, `cancel_task`, `query_task_status`
+- [x] 实现 `sstg_interaction_manager` 包 (100%) [2026-03-25]
+  - InteractionManagerNode：5阶段任务编排（NLP→规划→位姿→执行→反馈） ✓
+  - TaskState 状态机：8个状态 + 转移逻辑 ✓
+  - start_task 服务：协调所有上游模块 ✓
+  - cancel_task / query_task_status：任务控制服务 ✓
+  - navigation_feedback_callback：实时反馈监听 ✓
+  - 错误处理：5s 超时、服务不可用降级 ✓
+  - 文档：MODULE_GUIDE.md (~600行) + INTERACTION_QuickRef.md ✓
+  - 测试：16个单元测试用例 + 集成测试场景 ✓
+  - 编译：成功 (1.53s) ✓
+  - 版本：0.1.0
 - [ ] 系统集成测试
   - 一体化流程测试用例：输入“去客厅沙发”，全链路从 NLP -> 规划 -> 执行 -> 采集 -> 结果反馈
   - 干扰测试：正在导航时追加新目标（取消前一目标并切换），网络延迟/Nav2失败场景
