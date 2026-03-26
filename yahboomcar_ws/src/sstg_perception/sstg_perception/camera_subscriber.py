@@ -22,7 +22,7 @@ class CameraSubscriber(Node):
     - /camera/depth/image_raw (sensor_msgs/Image)
     """
     
-    def __init__(self, rgb_topic: str = '/camera/rgb/image_raw',
+    def __init__(self, rgb_topic: str = '/camera/color/image_raw',
                  depth_topic: str = '/camera/depth/image_raw',
                  image_buffer_size: int = 5):
         """

@@ -87,7 +87,7 @@ from sstg_perception.camera_subscriber import CameraSubscriber
 
 # 初始化
 camera = CameraSubscriber(
-    rgb_topic='/camera/rgb/image_raw',
+    rgb_topic='/camera/color/image_raw',
     depth_topic='/camera/depth/image_raw'
 )
 
@@ -299,7 +299,7 @@ api_base_url: "https://dashscope.aliyuncs.com/..."        # API 基础 URL
 vlm_model: "qwen-vl-plus"                                 # VLM 模型
 
 # 相机话题
-rgb_topic: "/camera/rgb/image_raw"                        # RGB 话题
+rgb_topic: "/camera/color/image_raw"                        # RGB 话题
 depth_topic: "/camera/depth/image_raw"                    # 深度话题
 
 # 存储配置
@@ -362,7 +362,7 @@ python3 test_perception.py
 ros2 topic list | grep camera
 
 # 检查图像数据
-ros2 topic echo /camera/rgb/image_raw --once
+ros2 topic echo /camera/color/image_raw --once
 ```
 
 ### 问题 2: API Key 未配置

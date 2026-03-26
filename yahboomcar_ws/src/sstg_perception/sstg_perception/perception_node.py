@@ -48,7 +48,7 @@ class PerceptionNode(Node):
         self.declare_parameter('api_base_url', 'https://dashscope.aliyuncs.com/compatible-mode/v1')
         self.declare_parameter('vlm_model', 'qwen-vl-plus')
         self.declare_parameter('panorama_storage_path', '/tmp/sstg_perception')
-        self.declare_parameter('rgb_topic', '/camera/rgb/image_raw')
+        self.declare_parameter('rgb_topic', '/camera/color/image_raw')
         self.declare_parameter('depth_topic', '/camera/depth/image_raw')
         self.declare_parameter('confidence_threshold', 0.5)
         self.declare_parameter('max_retries', 3)
@@ -242,12 +242,19 @@ class PerceptionNode(Node):
     def _publish_semantic_annotation(self, node_id: int, image_path: str,
                                     semantic_info: SemanticInfo) -> None:
         """发布语义标注消息"""
+        from geometry_msgs.msg import Pose
+        
         msg = sstg_msg.SemanticAnnotation()
         msg.node_id = node_id
         msg.image_path = image_path
-        msg.room_type = semantic_info.room_type
-        msg.description = semantic_info.description
-        msg.confidence = semantic_info.confidence
+        msg.timestamp = self.get_clock().now().to_msg()
+        msg.pose = Pose()  # 默认姿态
+        
+        # 创建 SemanticData
+        semantic_data = sstg_msg.SemanticData()
+        semantic_data.room_type = semantic_info.room_type
+        semantic_data.description = semantic_info.description
+        semantic_data.confidence = semantic_info.confidence
         
         for obj in semantic_info.objects:
             semantic_obj = sstg_msg.SemanticObject()
@@ -255,8 +262,9 @@ class PerceptionNode(Node):
             semantic_obj.position = obj.position
             semantic_obj.quantity = obj.quantity
             semantic_obj.confidence = obj.confidence
-            msg.objects.append(semantic_obj)
+            semantic_data.objects.append(semantic_obj)
         
+        msg.semantic_data = semantic_data
         self.semantic_pub.publish(msg)
     
     def destroy_node(self):
