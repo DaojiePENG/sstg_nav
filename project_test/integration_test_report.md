@@ -1,5 +1,5 @@
 # SSTG System Integration Test Report
-**Date:** 2026-03-25 19:17:56
+**Date:** 2026-03-26 13:31:53
 
 ## Summary
 - **Total Tests:** 5
@@ -24,7 +24,7 @@
 - confidence: 0.949999988079071
 - query_json: {"plan_id": "plan_0_to_0", "start_node_id": 0, "goal_node_id": 0, "path": [0], "steps": [], "total_distance": 0.0, "estimated_time": 0.0, "success": true, "reasoning": "\u89c4\u5212\u6210\u529f: \u9ad8\u76f8\u4f3c\u5ea6\u5339\u914d: '\u5ba2\u5385' \u2192 '\u5ba2\u5385'; \u7c7b\u578b\u5339\u914d: navigate_to \u2192 living_room", "candidate_indices": [0]}
 - error_message: 
-- duration: 0.82s
+- duration: 0.60s
 - feedback_count: 0
 - validation: ✓ Intent correct
 

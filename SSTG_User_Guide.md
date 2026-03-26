@@ -54,11 +54,11 @@ ros2 run sstg_interaction_manager interaction_manager_node --help
 
 ### 启动完整系统
 
-使用提供的启动脚本（推荐）：
+使用提供的集成测试脚本（推荐，自动初始化地图并启动所有节点）：
 
 ```bash
 cd ~/yahboomcar_ros2_ws
-./project_test/start_nodes.sh
+./project_test/run_tests.sh
 ```
 
 或者手动启动各组件：
@@ -92,9 +92,9 @@ ros2 service list | grep -E '(start_task|cancel_task|query_task_status|get_node_
 #### 方法1: 使用交互管理器 (推荐)
 
 ```bash
-# 发送自然语言导航指令
+# 发送自然语言导航指令（中文）
 ros2 service call /start_task sstg_msgs/srv/ProcessNLPQuery "{
-  text_input: 'Go to the living room',
+  text_input: '去客厅沙发',
   context: 'home environment'
 }"
 

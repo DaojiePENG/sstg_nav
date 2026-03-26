@@ -74,8 +74,8 @@ SSTG导航系统是一个基于ROS2的智能机器人导航框架，集成了自
 
 2. **启动系统**
    ```bash
-   # 使用启动脚本（推荐）
-   ./project_test/start_nodes.sh
+   # 使用集成测试脚本（推荐，自动初始化地图、启动所有节点、运行测试）
+   ./project_test/run_tests.sh
 
    # 或手动启动各组件
    ros2 run sstg_map_manager map_manager_node &
@@ -94,9 +94,9 @@ SSTG导航系统是一个基于ROS2的智能机器人导航框架，集成了自
 ### 基本使用
 
 ```bash
-# 发送导航指令
+# 发送中文导航指令
 ros2 service call /start_task sstg_msgs/srv/ProcessNLPQuery "{
-  text_input: 'Go to the living room',
+  text_input: '去客厅沙发',
   context: 'home environment'
 }"
 
@@ -112,29 +112,25 @@ ros2 service call /cancel_task std_srvs/srv/Trigger
 ### 运行集成测试
 
 ```bash
-# 一键集成测试（推荐）
-./project_test/run_test.sh
-
-# 或分步测试
-# 1. 初始化测试地图
-python3 project_test/init_test_map.py
-
-# 2. 启动所有节点
-./project_test/start_nodes.sh
-
-# 3. 在另一终端运行测试
-python3 project_test/test_system_integration.py
+# 完整集成测试（推荐）
+./project_test/run_tests.sh
 ```
 
-详细说明请查看 [测试文档](project_test/README.md)
+此脚本自动执行以下步骤：
+1. 初始化测试拓扑地图
+2. 启动所有 5 个 ROS2 节点
+3. 运行完整系统集成测试
+4. 自动清理并生成测试报告
 
-### 测试结果
+**测试结果位置**: `project_test/integration_test_report.md`
 
-- ✅ **服务可用性**: 7/7 核心服务正常
-- ✅ **任务处理**: NLP意图识别准确 (95%+ 置信度)
-- ✅ **状态管理**: 任务查询和取消功能正常
-- ✅ **错误处理**: 优雅的失败处理和恢复
-- ✅ **性能指标**: 响应时间 < 2秒，启动时间 < 15秒
+### 测试覆盖范围
+
+- ✅ 服务可用性检查（7 个核心服务）
+- ✅ 中文自然语言导航任务
+- ✅ 任务状态查询
+- ✅ NLP 意图识别
+- ✅ 拓扑地图匹配和规划
 
 ## 📚 文档资源
 
