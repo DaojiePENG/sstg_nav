@@ -157,9 +157,9 @@ class PanoramaCapture:
                     self.get_logger_func(f'  ✗ Rotation failed')
                     return None
 
-                # 等待稳定
+                # 等待稳定，同时持续处理相机消息
                 self.get_logger_func(f'  ⏳ Waiting {wait_after_rotation}s for stabilization...')
-                time.sleep(wait_after_rotation)
+                self._wait_and_update_camera(wait_after_rotation)
             else:
                 self.get_logger_func(f'  ⚠️  Manual mode: please rotate to {angle}° manually')
                 time.sleep(1.0)
@@ -298,6 +298,21 @@ class PanoramaCapture:
         result = self.navigator.getResult()
         return result == TaskResult.SUCCEEDED
 
+    def _wait_and_update_camera(self, duration: float) -> None:
+        """
+        等待指定时间，同时持续处理相机消息
+
+        Args:
+            duration: 等待时间（秒）
+        """
+        import rclpy
+        start_time = time.time()
+
+        while time.time() - start_time < duration:
+            # 持续处理相机消息，确保缓冲区更新
+            rclpy.spin_once(self.camera, timeout_sec=0.05)
+            time.sleep(0.05)
+
     def _capture_current_view(self, angle: int) -> Optional[Path]:
         """
         采集当前视角的图像
@@ -312,6 +327,19 @@ class PanoramaCapture:
         if not self.camera.is_ready():
             self.get_logger_func(f'  ✗ Camera not ready')
             return None
+
+        # 关键修复：处理最新的相机消息，确保获取实时图像
+        # 多次spin以确保获取到最新的帧（清空旧帧缓冲）
+        import rclpy
+        for _ in range(10):  # 增加处理次数，确保缓冲区刷新
+            rclpy.spin_once(self.camera, timeout_sec=0.05)
+
+        # 短暂等待确保最新帧已处理
+        time.sleep(0.3)
+
+        # 再次处理以获取绝对最新的帧
+        for _ in range(5):
+            rclpy.spin_once(self.camera, timeout_sec=0.05)
 
         # 获取图像
         rgb, depth = self.camera.get_latest_pair()
