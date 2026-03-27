@@ -5,12 +5,8 @@ SSTG Perception Node - 感知和语义标注 ROS2 节点
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
-from sensor_msgs.msg import Image
-from geometry_msgs.msg import PoseStamped
 import os
 from pathlib import Path
-import json
-from typing import Optional
 
 try:
     import sstg_msgs.msg as sstg_msg
@@ -25,7 +21,7 @@ except ImportError:
 from sstg_perception.camera_subscriber import CameraSubscriber
 from sstg_perception.panorama_capture import PanoramaCapture
 from sstg_perception.vlm_client import VLMClientWithRetry
-from sstg_perception.semantic_extractor import SemanticExtractor, SemanticInfo, SemanticObject
+from sstg_perception.semantic_extractor import SemanticExtractor, SemanticInfo
 
 
 class PerceptionNode(Node):
@@ -126,8 +122,8 @@ class PerceptionNode(Node):
         try:
             node_id = request.node_id
             pose = {
-                'x': float(request.pose.position.x),
-                'y': float(request.pose.position.y),
+                'x': float(request.pose.pose.position.x),
+                'y': float(request.pose.pose.position.y),
                 'theta': 0.0
             }
             
@@ -155,11 +151,13 @@ class PerceptionNode(Node):
             
             # 保存元数据
             self.panorama_capture.save_metadata(panorama_data)
-            
+
             response.success = True
-            response.image_paths = json.dumps(panorama_data['images'])
-            
-            self.get_logger().info(f'✓ Panorama captured: {panorama_data["images"]}')
+            # 将图像路径字典转换为列表，格式: "angle:/path"
+            images_dict = panorama_data['images']
+            response.image_paths = [f"{angle}:{path}" for angle, path in sorted(images_dict.items())]
+
+            self.get_logger().info(f'✓ Panorama captured: {len(images_dict)} images')
             
         except Exception as e:
             response.success = False

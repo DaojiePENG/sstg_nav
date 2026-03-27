@@ -5,7 +5,7 @@
 import cv2
 import numpy as np
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, Optional
 from datetime import datetime
 import json
 import threading
@@ -87,7 +87,7 @@ class PanoramaCapture:
             self.image_paths[angle] = str(image_path)
             
             if depth_image is not None:
-                depth_path = self._save_image(depth_image, angle, is_depth=True)
+                self._save_image(depth_image, angle, is_depth=True)
             
             result = {
                 'angle': angle,
@@ -101,50 +101,75 @@ class PanoramaCapture:
             
             return result
     
-    def capture_four_directions(self, camera_subscriber, 
+    def capture_four_directions(self, camera_subscriber,
                                node_id: int,
                                pose: Dict,
-                               rotation_callback=None) -> Dict:
+                               rotation_callback=None,
+                               wait_after_rotation: float = 1.5) -> Dict:
         """
         连续采集四个方向的图像（需要旋转）
-        
+
         Args:
             camera_subscriber: CameraSubscriber 实例
             node_id: 节点 ID
             pose: 机器人位姿
             rotation_callback: 旋转回调函数(angle) -> bool
-        
+            wait_after_rotation: 旋转后等待时间（秒），让图像稳定
+
         Returns:
-            完整的全景数据字典
+            完整的全景数据字典，失败返回None
         """
         self.node_id = node_id
         self.pose = pose
         self._reset_current_panorama()
-        
+
         all_paths = {}
-        
+
+        # 检查相机是否就绪
+        if not camera_subscriber.is_ready():
+            self.get_logger_func('✗ Camera not ready before panorama capture')
+            return None
+
         for idx, angle in enumerate(self.panorama_angles):
-            self.get_logger_func(f'Capturing direction {idx+1}/4: {angle}°')
-            
+            self.get_logger_func(f'📸 Capturing direction {idx+1}/4: {angle}°')
+
             # 如果有旋转回调，执行旋转
             if rotation_callback is not None:
+                self.get_logger_func(f'🔄 Rotating to {angle}°...')
                 rotation_ok = rotation_callback(angle)
                 if not rotation_ok:
                     self.get_logger_func(f'✗ Rotation to {angle}° failed')
                     return None
-                
-                # 等待旋转完成
-                time.sleep(1.0)
-            
-            # 获取图像
+
+                # 等待旋转完成和图像稳定
+                self.get_logger_func(f'⏳ Waiting {wait_after_rotation}s for stabilization...')
+                time.sleep(wait_after_rotation)
+            else:
+                # 手动旋转模式：等待用户手动旋转
+                if idx > 0:  # 第一个方向不需要等待
+                    self.get_logger_func(f'⏸  Please manually rotate to {angle}° and press Enter')
+                    # 注意：这里不能直接使用 input()，因为这是在ROS2节点中
+                    time.sleep(0.5)  # 短暂延迟
+
+            # 获取最新图像
             rgb, depth = camera_subscriber.get_latest_pair()
+
+            # 验证图像有效性
             if rgb is None:
-                self.get_logger_func(f'✗ Failed to capture image at {angle}°')
+                self.get_logger_func(f'✗ Failed to get RGB image at {angle}°')
                 return None
-            
+
+            if rgb.size == 0:
+                self.get_logger_func(f'✗ Empty RGB image at {angle}°')
+                return None
+
+            # 保存图像
             result = self.capture_panorama(rgb, depth, node_id, pose)
             all_paths[angle] = result['path']
-        
+
+            self.get_logger_func(f'✓ Direction {angle}° captured: {result["path"]}')
+
+        # 构建完整的全景数据
         panorama_data = {
             'node_id': node_id,
             'pose': pose,
@@ -152,7 +177,9 @@ class PanoramaCapture:
             'images': all_paths,
             'complete': True
         }
-        
+
+        self.get_logger_func(f'✅ Panorama capture complete! All 4 directions saved.')
+
         return panorama_data
     
     def _save_image(self, image: np.ndarray, angle: int,

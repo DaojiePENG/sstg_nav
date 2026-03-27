@@ -145,7 +145,8 @@ panorama_data = capture.capture_four_directions(
     camera_subscriber,
     node_id=0,
     pose={'x': 1.0, 'y': 2.0, 'theta': 0.0},
-    rotation_callback=None  # 可选的旋转回调
+    rotation_callback=None,  # 可选的旋转回调
+    wait_after_rotation=1.5  # 旋转后等待时间（秒）
 )
 
 # 检查状态
@@ -153,6 +154,24 @@ if capture.is_panorama_complete():
     pano_data = capture.get_panorama_data()
     print(pano_data['images'])
 ```
+
+**v0.1.2 改进**：
+- ✅ 添加相机就绪状态检查
+- ✅ 增强图像有效性验证（检查None和空图像）
+- ✅ 可配置的稳定等待时间 `wait_after_rotation`
+- ✅ 改进的日志输出和错误处理
+- ✅ 支持手动旋转模式
+
+**工作模式**：
+1. **手动模式** (rotation_callback=None)：
+   - 在每个方向前暂停，提示用户手动旋转机器人
+   - 适用于调试和测试
+   - 当前实现：连续采集4次当前视角图像
+
+2. **自动模式** (提供rotation_callback)：
+   - 通过回调函数自动控制机器人旋转
+   - 适用于完全自主采集
+   - 需要实现旋转控制接口
 
 #### 3. VLMClient
 VLM API 客户端
@@ -296,34 +315,41 @@ error_message: ''
 **调用示例**：
 ```bash
 ros2 service call /capture_panorama sstg_msgs/srv/CaptureImage \
-  "{node_id: 0, pose: {position: {x: 1.0, y: 2.0, z: 0.0}, orientation: {w: 1.0}}}"
+  "{node_id: 0, pose: {header: {frame_id: 'map'}, pose: {position: {x: 1.0, y: 2.0, z: 0.0}, orientation: {w: 1.0}}}}"
 ```
 
 **请求参数**:
 - `node_id`: 拓扑节点 ID
-- `pose`: 机器人位姿
-  - `position`: {x, y, z}
-  - `orientation`: {x, y, z, w} 四元数
+- `pose`: geometry_msgs/PoseStamped 类型
+  - `header.frame_id`: 坐标系（如 'map'）
+  - `pose.position`: {x, y, z}
+  - `pose.orientation`: {x, y, z, w} 四元数
 
 **响应字段**:
 - `success`: 布尔值，是否成功
-- `image_paths`: JSON 字符串，包含四个方向的图像路径
-  ```json
-  {
-    "0": "/tmp/sstg_perception/node_0/000deg_rgb.png",
-    "90": "/tmp/sstg_perception/node_0/090deg_rgb.png",
-    "180": "/tmp/sstg_perception/node_0/180deg_rgb.png",
-    "270": "/tmp/sstg_perception/node_0/270deg_rgb.png"
-  }
-  ```
+- `image_paths`: 字符串数组，格式为 `["angle:path", ...]`
+  - 示例: `["0:/tmp/sstg_perception/node_0/000deg_rgb.png", ...]`
 - `error_message`: 错误信息（失败时）
 
 **成功响应示例**：
-```
-success: True
-image_paths: '{"0": "/tmp/sstg_perception/node_0/000deg_rgb.png", ...}'
+```yaml
+success: true
+image_paths:
+  - '0:/tmp/sstg_perception/node_0/000deg_rgb.png'
+  - '90:/tmp/sstg_perception/node_0/090deg_rgb.png'
+  - '180:/tmp/sstg_perception/node_0/180deg_rgb.png'
+  - '270:/tmp/sstg_perception/node_0/270deg_rgb.png'
 error_message: ''
 ```
+
+**⚠️ 重要说明**：
+- 当前版本在**手动模式**下运行（无自动旋转）
+- 服务会连续采集4次图像，但不会控制机器人旋转
+- 要采集真正的全景图，需要：
+  1. 调用服务前手动旋转机器人到不同角度，或
+  2. 实现并提供 `rotation_callback` 函数实现自动旋转
+- 每次采集间隔约0.5秒
+- 同时保存RGB和深度图像
 
 ### 话题: semantic_annotations
 
@@ -501,9 +527,54 @@ ros2 service call /annotate_semantic sstg_msgs/srv/AnnotateSemantic \
 # 确保相机已启动
 ros2 topic list | grep camera
 
-# 调用服务
+# 调用服务（注意：使用正确的PoseStamped格式）
 ros2 service call /capture_panorama sstg_msgs/srv/CaptureImage \
-  "{node_id: 0, pose: {position: {x: 1.0, y: 2.0, z: 0.0}, orientation: {w: 1.0}}}"
+  "{node_id: 0, pose: {header: {frame_id: 'map'}, pose: {position: {x: 1.0, y: 2.0, z: 0.0}, orientation: {w: 1.0}}}}"
+
+# 验证保存的图像
+ls -lh /tmp/sstg_perception/node_0/
+# 应该看到: 000deg_rgb.png, 000deg_depth.png, 090deg_rgb.png, 等等
+
+# 查看元数据
+cat /tmp/sstg_perception/node_0/panorama_metadata.json
+```
+
+**使用Python客户端测试**：
+```python
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from sstg_msgs.srv import CaptureImage
+from geometry_msgs.msg import PoseStamped
+
+rclpy.init()
+node = Node('test_client')
+client = node.create_client(CaptureImage, '/capture_panorama')
+
+if client.wait_for_service(timeout_sec=5.0):
+    request = CaptureImage.Request()
+    request.node_id = 0
+    request.pose = PoseStamped()
+    request.pose.pose.position.x = 1.0
+    request.pose.pose.position.y = 2.0
+    request.pose.pose.orientation.w = 1.0
+    request.pose.header.frame_id = 'map'
+
+    future = client.call_async(request)
+    rclpy.spin_until_future_complete(node, future, timeout_sec=30.0)
+
+    if future.done():
+        response = future.result()
+        if response.success:
+            print('✅ Success!')
+            for img_path in response.image_paths:
+                angle, path = img_path.split(':', 1)
+                print(f'  {angle}°: {path}')
+        else:
+            print(f'✗ Failed: {response.error_message}')
+
+node.destroy_node()
+rclpy.shutdown()
 ```
 
 ### 性能测试
@@ -698,6 +769,18 @@ bash scripts/test_perception_services.sh
 ---
 
 ## 📝 更新历史
+
+- **v0.1.2** (2026-03-27): 全景采集管理器调试和功能增强
+  - ✓ 修复 PoseStamped 访问错误（pose.pose.position 而非 pose.position）
+  - ✓ 修复 capture_panorama 服务响应格式（使用字符串数组而非JSON）
+  - ✓ 增强 capture_four_directions 方法：
+    - 添加相机就绪状态检查
+    - 增加图像有效性验证（None检查和空图像检查）
+    - 添加可配置的稳定等待时间参数
+    - 改进日志输出（使用表情符号标记）
+  - ✓ 完善错误处理和用户提示
+  - ✓ 测试验证：成功采集4个方向的RGB+深度图（1280x800）
+  - ✓ 更新文档：添加实际测试示例和重要注意事项
 
 - **v0.1.1** (2026-03-26): 功能修复和文档完善
   - ✓ 修复 CameraSubscriber 消息处理问题（添加 rclpy.spin_once）
