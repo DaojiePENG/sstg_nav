@@ -52,6 +52,38 @@ SSTG导航系统是一个基于ROS2的智能机器人导航框架，集成了自
 6. **`sstg_perception`** - 多模态感知和语义标注
 7. **`sstg_msgs`** - 统一的消息和服务接口定义
 
+## � 工作空间架构
+
+本项目采用**分离式工作空间架构**，STTG导航系统与YahboomCar机器人控制系统独立管理：
+
+```
+~/yahboomcar_ros2_ws/
+├── sttg_nav_ws/              # ⭐ STTG导航系统独立工作空间
+│   ├── src/
+│   │   ├── sstg_interaction_manager/
+│   │   ├── sstg_map_manager/
+│   │   ├── sstg_msgs/
+│   │   ├── sstg_navigation_executor/
+│   │   ├── sstg_navigation_planner/
+│   │   ├── sstg_nlp_interface/
+│   │   └── sstg_perception/
+│   ├── build/
+│   ├── install/
+│   └── log/
+│
+└── yahboomcar_ws/            # YahboomCar机器人控制工作空间
+    ├── src/                  # 亚博机器人相关包（不再含STTG）
+    ├── build/
+    ├── install/
+    └── log/
+```
+
+**设计优势**：
+- ✅ 代码职责分离，便于独立开发维护
+- ✅ STTG系统可独立版本控制和发布
+- ✅ 便于跨机器人平台集成（不仅限YahboomCar）
+- ✅ 构建和测试互不干扰
+
 ## 🚀 快速开始
 
 ### 系统要求
@@ -63,18 +95,28 @@ SSTG导航系统是一个基于ROS2的智能机器人导航框架，集成了自
 
 ### 安装步骤
 
-1. **克隆和构建**
+1. **构建STTG导航系统**（必需）
    ```bash
-   cd ~/yahboomcar_ros2_ws/src
-   # 复制SSTG包到src目录
-   cd ~/yahboomcar_ros2_ws
+   cd ~/yahboomcar_ros2_ws/sttg_nav_ws
    colcon build --symlink-install
    source install/setup.bash
    ```
 
-2. **启动系统**
+2. **可选：构建YahboomCar工作空间**（如使用Yahboom机器人）
    ```bash
+   # 在另一个终端中
+   cd ~/yahboomcar_ros2_ws/yahboomcar_ws
+   colcon build --symlink-install
+   source install/setup.bash
+   ```
+
+3. **启动STTG系统**
+   ```bash
+   # 确保已source STTG工作空间
+   source ~/yahboomcar_ros2_ws/sttg_nav_ws/install/setup.bash
+   
    # 使用集成测试脚本（推荐，自动初始化地图、启动所有节点、运行测试）
+   cd ~/yahboomcar_ros2_ws
    ./project_test/run_tests.sh
 
    # 或手动启动各组件
@@ -85,7 +127,7 @@ SSTG导航系统是一个基于ROS2的智能机器人导航框架，集成了自
    ros2 run sstg_interaction_manager interaction_manager_node &
    ```
 
-3. **验证安装**
+4. **验证安装**
    ```bash
    # 检查服务可用性
    ros2 service list | grep sstg
