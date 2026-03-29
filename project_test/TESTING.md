@@ -18,7 +18,7 @@ project_test/
 ### 方式1: 完整一键测试（推荐）
 
 ```bash
-cd ~/sstg_nav
+cd ~/sstg-nav
 ./project_test/run_tests.sh
 ```
 
@@ -39,7 +39,7 @@ cd ~/sstg_nav
 python3 project_test/init_test_map.py
 
 # 2. 启动所有节点（在新终端）
-source ~/sstg_nav/yahboomcar_ws/install/setup.bash
+source ~/sstg-nav/yahboomcar_ws/install/setup.bash
 
 ros2 run sstg_map_manager map_manager_node &
 ros2 run sstg_nlp_interface nlp_node &

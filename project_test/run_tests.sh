@@ -4,7 +4,7 @@
 
 set -e
 
-WORKSPACE_DIR="/home/daojie/sstg_nav"
+WORKSPACE_DIR="/home/daojie/sstg-nav"
 PROJECT_TEST="${WORKSPACE_DIR}/project_test"
 SOURCE_CMD="source ${WORKSPACE_DIR}/yahboomcar_ws/install/setup.bash"
 LOG_DIR="${PROJECT_TEST}/logs"

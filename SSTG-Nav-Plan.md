@@ -344,7 +344,7 @@ VLM_MODEL: qwen-vl-plus
 MULTIMODAL_MODEL: qwen-omni-flash
 ```
 
-**配置文件位置**：`~/.config/sstg_nav/api_config.yaml` 或环境变量
+**配置文件位置**：`~/.config/sstg-nav/api_config.yaml` 或环境变量
 
 ### 3.2 ROS2 依赖
 
@@ -542,7 +542,7 @@ uvicorn>=0.23   # WebUI服务
 ## 七、文件树结构规划
 
 ```
-sstg_nav/
+sstg-nav/
 ├── src/
 │   ├── sstg_msgs/                    # 消息定义包
 │   │   ├── CMakeLists.txt
