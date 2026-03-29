@@ -1,9 +1,0 @@
-string intent
-string entities
-float32 confidence
-int32 current_node
----
-bool success
-int32[] candidate_node_ids
-string reasoning
-string plan_json

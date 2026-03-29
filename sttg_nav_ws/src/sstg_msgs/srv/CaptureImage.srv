@@ -1,6 +1,0 @@
-int32 node_id
-geometry_msgs/PoseStamped pose
----
-bool success
-string[] image_paths
-string error_message
