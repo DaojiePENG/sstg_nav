@@ -62,6 +62,20 @@ sudo apt install python3-colcon-common-extensions
 colcon --version
 ```
 
+**⚠️ 重要**: 确保setuptools版本兼容
+setuptools版本过新（≥70）可能与ROS2 colcon构建系统不兼容。请确保使用兼容版本：
+
+```bash
+# 查看当前setuptools版本
+pip show setuptools | grep Version
+
+# 如果版本 >= 70，需要降级到兼容版本（推荐 < 70）
+pip install 'setuptools<70'
+
+# 如果在conda环境中构建（推荐方式），确保环境中的setuptools版本正确
+conda run -n <your_env> pip install 'setuptools<70'
+```
+
 ### 第3步：安装Nav2
 
 ```bash
@@ -171,9 +185,41 @@ echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### 问题2：colcon build失败
+### 问题2：colcon build失败 - setuptools版本错误
 
-**症状**: 构建时出现错误
+**症状**: 构建时出现 `error: option --editable not recognized` 或 `error: option --build-directory not recognized`
+
+**原因**: setuptools版本过新（≥70）不支持ROS2 colcon构建系统传递的选项
+
+**解决**:
+```bash
+# 1. 查看当前setuptools版本
+pip show setuptools | grep Version
+
+# 2. 如果版本 >= 70，需要降级
+pip install 'setuptools<70'
+
+# 3. 如果使用conda环境（推荐），确保环境中的setuptools正确
+conda run -n hw_nav pip install 'setuptools<70'
+
+# 4. 清理构建并重试
+rm -rf build/ install/ log/
+colcon build --symlink-install
+```
+
+**验证修复**:
+```bash
+# 查看当前setuptools版本应该 < 70
+pip show setuptools | grep Version
+# 应该显示类似: Version: 69.5.1
+
+# 确保colcon能识别
+python3 -c "import setuptools; print(f'setuptools version: {setuptools.__version__}')"
+```
+
+### 问题3：colcon build失败 - 其他构建错误
+
+**症状**: 构建时出现其他错误
 
 **解决**:
 ```bash
@@ -190,7 +236,7 @@ colcon build --symlink-install --executor sequential --event-handlers console_di
 rosdep install --from-paths src --ignore-src -y
 ```
 
-### 问题3：找不到Python包
+### 问题4：找不到Python包
 
 **症状**: `ModuleNotFoundError: No module named 'fastapi'`
 
@@ -246,6 +292,57 @@ ls -la ~/yahboomcar_ros2_ws/sttg_nav_ws/src
 ```
 
 ## 🧪 验证和测试
+
+### 构建前的关键检查清单
+
+在运行 `colcon build` 之前，建议先运行自动检查脚本：
+
+```bash
+# 运行环境检查脚本
+bash check_environment.sh
+```
+
+这个脚本会自动检查以下内容：
+- Python版本（需要3.10+）
+- ROS2环境（需要Humble）
+- colcon工具
+- **setuptools版本（需要 < 70）** ⚠️ 最关键
+- 项目结构和依赖包
+
+如果所有检查通过，脚本会提示你可以开始构建。
+
+### 手动检查清单
+
+如果不使用脚本，请手动检查以下几点：
+
+```bash
+# 1. 检查setuptools版本（最关键）
+pip show setuptools | grep Version
+# ✓ 应该显示 Version < 70（推荐 69.x）
+# ✗ 如果 >= 70，运行: pip install 'setuptools<70'
+
+# 2. 如果使用conda环境，检查该环境中的setuptools
+conda run -n hw_nav pip show setuptools | grep Version
+# ✓ 应该 < 70
+
+# 3. 检查colcon是否正确安装
+colcon --help | head -5
+# ✓ 应该显示colcon帮助信息
+
+# 4. 检查ROS2是否正确source
+echo $ROS_DISTRO
+# ✓ 应该显示 "humble"
+
+# 5. 检查Python版本
+python3 --version
+# ✓ 应该是3.10或更高
+
+# 6. 检查源代码目录
+ls -la ~/yahboomcar_ros2_ws/sttg_nav_ws/src
+# ✓ 应该包含7个STTG包目录
+```
+
+如果所有检查都通过，现在可以继续构建了。
 
 ### 快速测试
 
