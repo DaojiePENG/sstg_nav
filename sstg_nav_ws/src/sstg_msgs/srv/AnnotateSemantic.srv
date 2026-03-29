@@ -1,0 +1,9 @@
+string image_path
+int32 node_id
+---
+bool success
+string room_type
+sstg_msgs/SemanticObject[] objects
+float32 confidence
+string description
+string error_message

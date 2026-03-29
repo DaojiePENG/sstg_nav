@@ -4,7 +4,7 @@
 
 这是YahboomCar机器人的硬件控制系统工作空间，专门用于YahboomCar机器人的底层驱动、传感器接口和基础控制。
 
-> **⚠️ 重要提示**: 从Phase 3.1开始，STTG导航系统已独立迁移到 `sttg_nav_ws` 工作空间。此工作空间现在**仅包含**YahboomCar机器人相关的包。
+> **⚠️ 重要提示**: 从Phase 3.1开始，SSTG导航系统已独立迁移到 `sstg_nav_ws` 工作空间。此工作空间现在**仅包含**YahboomCar机器人相关的包。
 
 ## 📂 工作空间结构
 
@@ -73,18 +73,18 @@ echo "source ~/yahboomcar_ros2_ws/yahboomcar_ws/install/setup.bash" >> ~/.bashrc
 ### 关键文档位置
 
 - **[主项目README](../README.md)** - 完整项目架构说明
-- **[STTG独立工作空间](../sttg_nav_ws/README.md)** - STTG导航系统文档
-- **[STTG用户指南](../SSTG_User_Guide.md)** - 系统完整使用手册
+- **[SSTG独立工作空间](../sstg_nav_ws/README.md)** - SSTG导航系统文档
+- **[SSTG用户指南](../SSTG_User_Guide.md)** - 系统完整使用手册
 
 ### 工作空间文档
 
 各个包的README和文档位于对应包的目录下。
 
-## 🔄 与STTG导航系统的集成
+## 🔄 与SSTG导航系统的集成
 
 ### 单独使用YahboomCar
 
-如果只想使用YahboomCar机器人的基础功能（不需要STTG导航）：
+如果只想使用YahboomCar机器人的基础功能（不需要SSTG导航）：
 
 ```bash
 # 只Source YahboomCar工作空间
@@ -94,37 +94,37 @@ source ~/yahboomcar_ros2_ws/yahboomcar_ws/install/setup.bash
 ros2 launch yahboomcar_bringup bringup.launch.py
 ```
 
-### 同时使用YahboomCar和STTG导航系统
+### 同时使用YahboomCar和SSTG导航系统
 
-如果需要完整的STTG导航系统和YahboomCar控制的集成：
+如果需要完整的SSTG导航系统和YahboomCar控制的集成：
 
 ```bash
 # Source两个工作空间
-source ~/yahboomcar_ros2_ws/sttg_nav_ws/install/setup.bash
+source ~/yahboomcar_ros2_ws/sstg_nav_ws/install/setup.bash
 source ~/yahboomcar_ros2_ws/yahboomcar_ws/install/setup.bash
 
 # 启动YahboomCar机器人
 ros2 launch yahboomcar_bringup bringup.launch.py &
 
-# 启动STTG导航系统
+# 启动SSTG导航系统
 cd ~/yahboomcar_ros2_ws
 ./project_test/run_tests.sh
 ```
 
 ### 使用其他机器人平台
 
-如果想在其他机器人平台上使用STTG导航系统：
+如果想在其他机器人平台上使用SSTG导航系统：
 
 ```bash
-# 只需要STTG工作空间，不需要YahboomCar工作空间
-source ~/yahboomcar_ros2_ws/sttg_nav_ws/install/setup.bash
+# 只需要SSTG工作空间，不需要YahboomCar工作空间
+source ~/yahboomcar_ros2_ws/sstg_nav_ws/install/setup.bash
 
 # 确保目标机器人支持：
 # - ROS2 Humble
 # - Nav2导航框架
 # - 基础移动控制接口
 
-# 启动STTG导航系统
+# 启动SSTG导航系统
 cd ~/yahboomcar_ros2_ws
 ./project_test/run_tests.sh
 ```
@@ -223,14 +223,14 @@ ros2 launch yahboomcar_bringup bringup.launch.py --log-level debug
 ## 📝 架构变化说明
 
 ### Phase 3.1 之前
-- STTG导航和YahboomCar控制在同一工作空间混合
+- SSTG导航和YahboomCar控制在同一工作空间混合
 - 不便于版本管理和跨平台集成
 
 ### Phase 3.1 之后 (当前)
-- ✅ STTG系统独立到 `sttg_nav_ws`
+- ✅ SSTG系统独立到 `sstg_nav_ws`
 - ✅ YahboomCar工作空间专注于机器人控制
 - ✅ 两个系统可独立开发、版本管理和部署
-- ✅ 便于将STTG系统集成到其他机器人平台
+- ✅ 便于将SSTG系统集成到其他机器人平台
 
 ## 📄 许可证
 
@@ -244,5 +244,5 @@ Apache 2.0 - 详见[LICENSE](../LICENSE)
 
 > **相关链接**:
 > - [主项目README](../README.md)
-> - [STTG独立工作空间](../sttg_nav_ws/README.md)
+> - [SSTG独立工作空间](../sstg_nav_ws/README.md)
 > - [项目总结](../PROJECT_SUMMARY.md)

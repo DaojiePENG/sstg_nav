@@ -11,7 +11,7 @@
 1. **完整系统实现**: 7个ROS2包全部开发完成
 2. **端到端功能**: 从自然语言输入到机器人导航执行
 3. **集成测试通过**: 100%测试成功率，所有服务正常通信
-4. **架构优化**: STTG系统与YahboomCar分离，实现独立工作空间管理
+4. **架构优化**: SSTG系统与YahboomCar分离，实现独立工作空间管理
 5. **生产就绪**: 代码质量高，文档完善，易于部署和跨平台集成
 
 ---
@@ -23,17 +23,17 @@
 ```
 yahboomcar_ws/src/
 ├── yahboomcar_*/ (Yahboom机器人包)
-├── sstg_*/      (STTG导航包混在一起)
+├── sstg_*/      (SSTG导航包混在一起)
 └── 其他包
 ```
 
-**问题**: STTG和YahboomCar混合管理，不便于独立开发和跨平台使用。
+**问题**: SSTG和YahboomCar混合管理，不便于独立开发和跨平台使用。
 
 ### Phase 3.1 之后（新结构 - 当前）✅
 
 ```
 yahboomcar_ros2_ws/
-├── sttg_nav_ws/           # ⭐ STTG独立工作空间
+├── sstg_nav_ws/           # ⭐ SSTG独立工作空间
 │   ├── src/
 │   │   ├── sstg_interaction_manager/
 │   │   ├── sstg_map_manager/
@@ -55,10 +55,10 @@ yahboomcar_ros2_ws/
 
 **优势**:
 - ✅ 清晰的职责分离
-- ✅ STTG系统可独立版本控制
+- ✅ SSTG系统可独立版本控制
 - ✅ 便于跨不同机器人平台集成
 - ✅ 构建时间减少，互不干扰
-- ✅ 便于开源发布单独的STTG系统
+- ✅ 便于开源发布单独的SSTG系统
 
 ---
 
@@ -68,13 +68,13 @@ yahboomcar_ros2_ws/
 
 | 包名 | 功能 | 位置 | 关键特性 |
 |------|------|------|----------|
-| `sstg_msgs` | 消息定义 | `sttg_nav_ws/src/` | 7消息+8服务接口 |
-| `sstg_map_manager` | 拓扑地图管理 | `sttg_nav_ws/src/` | NetworkX图结构，WebUI，持久化 |
-| `sstg_perception` | 多模态感知 | `sttg_nav_ws/src/` | VLM集成，语义标注，图像处理 |
-| `sstg_nlp_interface` | 自然语言处理 | `sttg_nav_ws/src/` | 意图识别，qwen-vl-plus集成 |
-| `sstg_navigation_planner` | 路径规划 | `sttg_nav_ws/src/` | 语义匹配，候选点生成，拓扑规划 |
-| `sstg_navigation_executor` | 导航执行 | `sttg_nav_ws/src/` | Nav2集成，进度监控，反馈发布 |
-| `sstg_interaction_manager` | 任务编排 | `sttg_nav_ws/src/` | 状态机，服务协调，错误处理 |
+| `sstg_msgs` | 消息定义 | `sstg_nav_ws/src/` | 7消息+8服务接口 |
+| `sstg_map_manager` | 拓扑地图管理 | `sstg_nav_ws/src/` | NetworkX图结构，WebUI，持久化 |
+| `sstg_perception` | 多模态感知 | `sstg_nav_ws/src/` | VLM集成，语义标注，图像处理 |
+| `sstg_nlp_interface` | 自然语言处理 | `sstg_nav_ws/src/` | 意图识别，qwen-vl-plus集成 |
+| `sstg_navigation_planner` | 路径规划 | `sstg_nav_ws/src/` | 语义匹配，候选点生成，拓扑规划 |
+| `sstg_navigation_executor` | 导航执行 | `sstg_nav_ws/src/` | Nav2集成，进度监控，反馈发布 |
+| `sstg_interaction_manager` | 任务编排 | `sstg_nav_ws/src/` | 状态机，服务协调，错误处理 |
 
 ### 测试和文档
 
@@ -83,17 +83,17 @@ yahboomcar_ros2_ws/
 - ✅ **用户指南**: 完整使用手册 (`SSTG_User_Guide.md`)
 - ✅ **API文档**: 各模块详细文档
 - ✅ **部署脚本**: 自动化启动和测试脚本
-- ✅ **工作空间文档**: STTG独立工作空间README和安装指南
+- ✅ **工作空间文档**: SSTG独立工作空间README和安装指南
 
 ---
 
 ## 🔧 快速开始
 
-### 1. 构建STTG系统（新工作空间）
+### 1. 构建SSTG系统（新工作空间）
 
 ```bash
-# 构建独立的STTG导航系统
-cd ~/yahboomcar_ros2_ws/sttg_nav_ws
+# 构建独立的SSTG导航系统
+cd ~/yahboomcar_ros2_ws/sstg_nav_ws
 colcon build --symlink-install
 source install/setup.bash
 ```
@@ -101,8 +101,8 @@ source install/setup.bash
 ### 2. 启动系统
 
 ```bash
-# 确保已source STTG工作空间
-source ~/yahboomcar_ros2_ws/sttg_nav_ws/install/setup.bash
+# 确保已source SSTG工作空间
+source ~/yahboomcar_ros2_ws/sstg_nav_ws/install/setup.bash
 
 # 运行集成测试
 cd ~/yahboomcar_ros2_ws

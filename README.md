@@ -130,7 +130,7 @@ sequenceDiagram
 ```
 ~/yahboomcar_ros2_ws/
 │
-├── 📁 sttg_nav_ws/                  # STTG导航系统工作空间
+├── 📁 sstg_nav_ws/                  # SSTG导航系统工作空间
 │   ├── src/
 │   │   ├── sstg_msgs/               # 消息定义
 │   │   ├── sstg_map_manager/        # 地图管理
@@ -143,7 +143,7 @@ sequenceDiagram
 │   └── README.md & INSTALLATION.md
 │
 └── 📁 yahboomcar_ws/                # YahboomCar工作空间
-    └── src/                         # 机器人控制包（不含STTG）
+    └── src/                         # 机器人控制包（不含SSTG）
 ```
 
 ### 核心组件
@@ -185,11 +185,11 @@ sequenceDiagram
 
 ## � 工作空间架构
 
-本项目采用**分离式工作空间架构**，STTG导航系统与YahboomCar机器人控制系统独立管理：
+本项目采用**分离式工作空间架构**，SSTG导航系统与YahboomCar机器人控制系统独立管理：
 
 ```
 ~/yahboomcar_ros2_ws/
-├── sttg_nav_ws/              # ⭐ STTG导航系统独立工作空间
+├── sstg_nav_ws/              # ⭐ SSTG导航系统独立工作空间
 │   ├── src/
 │   │   ├── sstg_interaction_manager/
 │   │   ├── sstg_map_manager/
@@ -203,7 +203,7 @@ sequenceDiagram
 │   └── log/
 │
 └── yahboomcar_ws/            # YahboomCar机器人控制工作空间
-    ├── src/                  # 亚博机器人相关包（不再含STTG）
+    ├── src/                  # 亚博机器人相关包（不再含SSTG）
     ├── build/
     ├── install/
     └── log/
@@ -211,7 +211,7 @@ sequenceDiagram
 
 **设计优势**：
 - ✅ 代码职责分离，便于独立开发维护
-- ✅ STTG系统可独立版本控制和发布
+- ✅ SSTG系统可独立版本控制和发布
 - ✅ 便于跨机器人平台集成（不仅限YahboomCar）
 - ✅ 构建和测试互不干扰
 
@@ -226,9 +226,9 @@ sequenceDiagram
 
 ### 安装步骤
 
-1. **构建STTG导航系统**（必需）
+1. **构建SSTG导航系统**（必需）
    ```bash
-   cd ~/yahboomcar_ros2_ws/sttg_nav_ws
+   cd ~/yahboomcar_ros2_ws/sstg_nav_ws
    colcon build --symlink-install
    source install/setup.bash
    ```
@@ -241,10 +241,10 @@ sequenceDiagram
    source install/setup.bash
    ```
 
-3. **启动STTG系统**
+3. **启动SSTG系统**
    ```bash
-   # 确保已source STTG工作空间
-   source ~/yahboomcar_ros2_ws/sttg_nav_ws/install/setup.bash
+   # 确保已source SSTG工作空间
+   source ~/yahboomcar_ros2_ws/sstg_nav_ws/install/setup.bash
    
    # 使用集成测试脚本（推荐，自动初始化地图、启动所有节点、运行测试）
    cd ~/yahboomcar_ros2_ws

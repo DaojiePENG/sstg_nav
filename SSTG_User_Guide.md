@@ -16,13 +16,13 @@ SSTG (Spatial Semantic Topological Graph) 导航系统是一个**完整的机器
 
 | 组件 | 功能 | 关键文件位置 |
 |------|------|-----------|
-| **Map Manager** (`sstg_map_manager`) | 拓扑地图管理、Web管理界面、节点查询 | `sttg_nav_ws/src/sstg_map_manager/` |
-| **NLP Interface** (`sstg_nlp_interface`) | 自然语言处理、意图识别、LLM集成 | `sttg_nav_ws/src/sstg_nlp_interface/` |
-| **Navigation Planner** (`sstg_navigation_planner`) | 语义路径规划、候选点生成、拓扑规划 | `sttg_nav_ws/src/sstg_navigation_planner/` |
-| **Navigation Executor** (`sstg_navigation_executor`) | Nav2导航执行、进度监控、反馈发布 | `sttg_nav_ws/src/sstg_navigation_executor/` |
-| **Interaction Manager** (`sstg_interaction_manager`) | 任务编排、系统协调、状态管理 | `sttg_nav_ws/src/sstg_interaction_manager/` |
-| **Perception** (`sstg_perception`) | 多模态感知、语义标注、视觉处理 | `sttg_nav_ws/src/sstg_perception/` |
-| **Messages** (`sstg_msgs`) | 统一接口定义(7消息+8服务) | `sttg_nav_ws/src/sstg_msgs/` |
+| **Map Manager** (`sstg_map_manager`) | 拓扑地图管理、Web管理界面、节点查询 | `sstg_nav_ws/src/sstg_map_manager/` |
+| **NLP Interface** (`sstg_nlp_interface`) | 自然语言处理、意图识别、LLM集成 | `sstg_nav_ws/src/sstg_nlp_interface/` |
+| **Navigation Planner** (`sstg_navigation_planner`) | 语义路径规划、候选点生成、拓扑规划 | `sstg_nav_ws/src/sstg_navigation_planner/` |
+| **Navigation Executor** (`sstg_navigation_executor`) | Nav2导航执行、进度监控、反馈发布 | `sstg_nav_ws/src/sstg_navigation_executor/` |
+| **Interaction Manager** (`sstg_interaction_manager`) | 任务编排、系统协调、状态管理 | `sstg_nav_ws/src/sstg_interaction_manager/` |
+| **Perception** (`sstg_perception`) | 多模态感知、语义标注、视觉处理 | `sstg_nav_ws/src/sstg_perception/` |
+| **Messages** (`sstg_msgs`) | 统一接口定义(7消息+8服务) | `sstg_nav_ws/src/sstg_msgs/` |
 
 ## 系统要求
 
@@ -68,7 +68,7 @@ ros2 --version             # 应显示 ROS 2 Humble
 python3 --version          # 应显示 3.10+
 ```
 
-如果环境不完整，请参考 [INSTALLATION.md](sttg_nav_ws/INSTALLATION.md) 进行详细安装。
+如果环境不完整，请参考 [INSTALLATION.md](sstg_nav_ws/INSTALLATION.md) 进行详细安装。
 
 ### 第二步：克隆或进入工作空间
 
@@ -84,7 +84,7 @@ ls -la | grep nav_ws
 
 ```bash
 # 进入SSTG独立工作空间
-cd ~/yahboomcar_ros2_ws/sttg_nav_ws
+cd ~/yahboomcar_ros2_ws/sstg_nav_ws
 
 # 安装系统依赖（如果之前没有安装）
 sudo apt-get install ros-humble-nav2 ros-humble-rclpy -y
@@ -96,7 +96,7 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-> **注意**: 如果构建失败，检查 [INSTALLATION.md](sttg_nav_ws/INSTALLATION.md) 中的常见问题。
+> **注意**: 如果构建失败，检查 [INSTALLATION.md](sstg_nav_ws/INSTALLATION.md) 中的常见问题。
 
 ### 第四步：验证安装
 
@@ -148,7 +148,7 @@ cd ~/yahboomcar_ros2_ws
 **终端 1 - 启动Map Manager（地图管理）**
 ```bash
 cd ~/yahboomcar_ros2_ws
-source sttg_nav_ws/install/setup.bash
+source sstg_nav_ws/install/setup.bash
 
 # 初始化测试地图
 python3 project_test/init_test_map.py
@@ -159,25 +159,25 @@ ros2 run sstg_map_manager map_manager_node
 
 **终端 2 - 启动NLP Interface（自然语言处理）**
 ```bash
-source ~/yahboomcar_ros2_ws/sttg_nav_ws/install/setup.bash
+source ~/yahboomcar_ros2_ws/sstg_nav_ws/install/setup.bash
 ros2 run sstg_nlp_interface nlp_node
 ```
 
 **终端 3 - 启动Navigation Planner（路径规划）**
 ```bash
-source ~/yahboomcar_ros2_ws/sttg_nav_ws/install/setup.bash
+source ~/yahboomcar_ros2_ws/sstg_nav_ws/install/setup.bash
 ros2 run sstg_navigation_planner planning_node
 ```
 
 **终端 4 - 启动Navigation Executor（导航执行）**
 ```bash
-source ~/yahboomcar_ros2_ws/sttg_nav_ws/install/setup.bash
+source ~/yahboomcar_ros2_ws/sstg_nav_ws/install/setup.bash
 ros2 run sstg_navigation_executor executor_node
 ```
 
 **终端 5 - 启动Interaction Manager（系统协调）**
 ```bash
-source ~/yahboomcar_ros2_ws/sttg_nav_ws/install/setup.bash
+source ~/yahboomcar_ros2_ws/sstg_nav_ws/install/setup.bash
 ros2 run sstg_interaction_manager interaction_manager_node
 ```
 
@@ -328,7 +328,7 @@ ros2 service call /get_node_pose sstg_msgs/srv/GetNodePose "{
 # - 修改节点的语义标签
 ```
 
-更多详情参考: [Map Manager文档](sttg_nav_ws/src/sstg_map_manager/doc/QUICK_START.md)
+更多详情参考: [Map Manager文档](sstg_nav_ws/src/sstg_map_manager/doc/QUICK_START.md)
 
 ### 2. 自定义NLP命令
 
@@ -383,10 +383,10 @@ ros2 service call /start_task sstg_msgs/srv/ProcessNLPQuery "{
 
 ```bash
 # 查看各个包的配置
-ls -la ~/yahboomcar_ros2_ws/sttg_nav_ws/src/*/config/
+ls -la ~/yahboomcar_ros2_ws/sstg_nav_ws/src/*/config/
 
 # 例如查看规划器参数
-cat ~/yahboomcar_ros2_ws/sttg_nav_ws/src/sstg_navigation_planner/config/planning_params.yaml
+cat ~/yahboomcar_ros2_ws/sstg_nav_ws/src/sstg_navigation_planner/config/planning_params.yaml
 ```
 
 ### 常用参数调整
@@ -562,7 +562,7 @@ ros2 run sstg_interaction_manager interaction_manager_node
 cat ~/yahboomcar_ros2_ws/project_test/integration_test_report.md
 
 # 检查各包的详细文档
-ls -la ~/yahboomcar_ros2_ws/sttg_nav_ws/src/*/doc/
+ls -la ~/yahboomcar_ros2_ws/sstg_nav_ws/src/*/doc/
 ```
 
 ## 实验和示例
@@ -626,7 +626,7 @@ wait
 ### 项目结构理解
 
 ```
-sttg_nav_ws/
+sstg_nav_ws/
 ├── src/
 │   ├── sstg_msgs/                    # 消息和服务定义（接口层）
 │   ├── sstg_map_manager/             # 地图管理（数据层）
@@ -702,8 +702,8 @@ colcon test --packages-select sstg_map_manager
 - README.md - 了解项目整体状况
 - PROJECT_SUMMARY.md - 完成情况统计
 - WORKSPACE_MIGRATION_SUMMARY.md - 工作空间迁移信息和快速参考
-- sttg_nav_ws/README.md - 工作空间特定信息
-- sttg_nav_ws/INSTALLATION.md - 详细安装步骤
+- sstg_nav_ws/README.md - 工作空间特定信息
+- sstg_nav_ws/INSTALLATION.md - 详细安装步骤
 - project_test/TESTING.md - 测试框架说明
 
 ### 在线资源
@@ -786,7 +786,7 @@ cd ~/yahboomcar_ros2_ws
 ./project_test/run_tests.sh
 
 # 源环境（如需手动启动）
-source sttg_nav_ws/install/setup.bash
+source sstg_nav_ws/install/setup.bash
 
 # 发送导航任务（在另一终端）
 ros2 service call /start_task sstg_msgs/srv/ProcessNLPQuery "{

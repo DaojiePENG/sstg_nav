@@ -1,0 +1,27 @@
+# SSTG Perception Module Configuration
+
+# API Configuration
+api_key: ""  # 从环境变量或命令行传入
+api_base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+vlm_model: "qwen-vl-plus"
+
+# Camera Topics
+rgb_topic: "/camera/rgb/image_raw"
+depth_topic: "/camera/depth/image_raw"
+
+# Storage Configuration
+panorama_storage_path: "/tmp/sstg_perception"
+image_format: "png"  # png or jpg
+
+# VLM Configuration
+confidence_threshold: 0.5
+max_retries: 3
+vlm_timeout: 30.0
+
+# Panorama Configuration
+panorama_angles: [0, 90, 180, 270]
+image_buffer_size: 5
+
+# Processing
+enable_depth_processing: true
+merge_strategy: "average"  # average, union, intersection
